@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import pickle
+import os
 
 
 class track_Sample:
@@ -36,6 +37,7 @@ if __name__ == "__main__":
     sample = track_Sample(0, IMG)
     squence=track_Squence(ID=0)
     squence.append(sample)
+
     #track_samples.append(sample)
 
     # output = open('data.pkl', 'wb')
