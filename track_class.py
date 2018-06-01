@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-import pickle
 import matplotlib.pyplot as plt
 from skimage import data, exposure, img_as_float
+
 
 class track_Sample:
     def __init__(self, ID=0, IMG=None):
@@ -19,6 +19,10 @@ class track_Squence:
 
     def __init__(self, ID=0):
         self.id = ID
+
+    def __del__(self):
+        self.id=0
+        self.Samples=list()
 
     def append(self, Sample):
         if type(Sample) != type(track_Sample(0, np.array([]))):
@@ -40,12 +44,16 @@ class track_Squence:
             img = self.Samples[i].image
             for Gamma in np.logspace(-1, 0.3, 5):
                 gam = exposure.adjust_gamma(img, Gamma)
-                sample=track_Sample(self.id,gam)
+                sample = track_Sample(self.id, gam)
                 self.append(sample)
 
 
 class track_dataset:
-    undefine = 0
+    track_dataset=list()
+    def append(self,Squence):
+        if type(Squence) != type(track_Squence(0)):
+            raise TypeError("Sample must be track_Sample class")
+        self.track_dataset.append(Squence)
 
 
 def imflip(img):
@@ -58,7 +66,6 @@ def imflip(img):
 
 
 if __name__ == "__main__":
-
     # IMG = cv2.imread('lena.jpg')
     IMG = cv2.imread('10.png')
     img = np.float32(img_as_float(IMG))  ##transform to float32
@@ -73,10 +80,5 @@ if __name__ == "__main__":
     squence = track_Squence(ID=0)
     squence.append(sample)
     squence.Samples_Augment(rate=1)
-
-    # output = open('data.pkl', 'wb')
-    # # Pickle dictionary using protocol 0.
-    # pickle.dump(track_sample, output)
-    # output.close()
-    # output = open('data.pkl', 'rb')
-    # x = pickle.load(output)
+    dataset=track_dataset()
+    dataset.append(squence)
