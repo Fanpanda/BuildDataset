@@ -67,11 +67,10 @@ def imflip(img):
     return flip_img
 
 
-## 获得训练batch三元组数据
+## 获得三元组数据
 def get_triple(Batch, trackData_list):
     if len(trackData_list) < Batch:
         raise TypeError("The length of trackData_list must longer than bach size")
-    np.random.seed(1)
     batchData = list()
     posData = list()
     negData = list()
@@ -99,6 +98,48 @@ def get_triple(Batch, trackData_list):
         posData.append(pos)
 
     return batchData, posData, negData
+
+## 获得训练batch三元组数据->N*H*W*C
+def get_triple_CNN(Batch, trackData_list):
+    if len(trackData_list) < Batch:
+        raise TypeError("The length of trackData_list must longer than bach size")
+    batchData = list()
+    posData = list()
+    negData = list()
+
+    squenceIndx = np.random.randint(0, len(trackData_list), Batch)
+    for i in squenceIndx:
+        sampleIndx = np.random.randint(0, len(trackData_list[i].Samples), 1)
+        posIndx = np.random.randint(0, len(trackData_list[i].Samples), 1)
+        while (posIndx == sampleIndx):
+            print("sampleIndx==posIndx")
+            posIndx = np.random.randint(0, len(trackData_list[i].Samples), 1)
+
+        negsIndx = np.random.randint(0, len(trackData_list), 1)
+        while (i == negsIndx):
+            print("squenceIndx==negIndx")
+            negsIndx = np.random.randint(0, len(trackData_list), 1)
+
+        negIndx = np.random.randint(0, len(trackData_list[negsIndx[0]].Samples), 1)
+        neg = trackData_list[negsIndx[0]].Samples[negIndx[0]]
+        data = trackData_list[i].Samples[sampleIndx[0]]
+        pos = trackData_list[i].Samples[posIndx[0]]
+        negData.append(neg)
+        batchData.append(data)
+        posData.append(pos)
+
+    Batch_data = np.reshape(batchData[0].image, (1, 128, 64, 3))
+    Batch_pos = np.reshape(posData[0].image, (1, 128, 64, 3))
+    Batch_neg = np.reshape(negData[0].image, (1, 128, 64, 3))
+
+    # Batch_data = np.concatenate((Batch_data, np.reshape(data[1].image, (1, 128, 64, 3))))
+
+    for i in range(1, Batch):
+        Batch_data = np.concatenate((Batch_data, np.reshape(batchData[i].image, (1, 128, 64, 3))))
+        Batch_pos = np.concatenate((Batch_pos, np.reshape(posData[i].image, (1, 128, 64, 3))))
+        Batch_neg = np.concatenate((Batch_neg, np.reshape(negData[i].image, (1, 128, 64, 3))))
+
+    return Batch_data, Batch_pos, Batch_neg
 
 
 if __name__ == "__main__":
